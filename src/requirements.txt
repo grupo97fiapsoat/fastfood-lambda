@@ -1,0 +1,3 @@
+# Dependências externas, se tiver alguma
+# Exemplo: boto3
+boto3

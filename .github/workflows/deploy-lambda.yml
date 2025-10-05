@@ -1,0 +1,32 @@
+name: Deploy Lambda
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar credenciais AWS via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: sa-east-1
+
+      - name: Empacotar Lambda
+        run: |
+          cd src
+          zip -r ../deploy.zip .
+          cd ..
+
+      - name: Terraform apply
+        run: |
+          cd infra
+          terraform init
+          terraform apply -auto-approve
