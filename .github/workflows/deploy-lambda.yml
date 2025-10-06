@@ -1,14 +1,21 @@
 name: Deploy Lambda
+
 on:
   push:
     branches:
       - main
     paths:
       - 'src/**'
+      - 'infra/**'
+      - '.github/workflows/deploy-lambda.yml'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -25,8 +32,8 @@ jobs:
           zip -r ../deploy.zip .
           cd ..
 
-      - name: Terraform apply
+      - name: Terraform Apply
         run: |
           cd infra
-          terraform init
-          terraform apply -auto-approve
+          terraform init -input=false
+          terraform apply -auto-approve -input=false
