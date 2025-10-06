@@ -1,7 +1,3 @@
-provider "aws" {
-  region = "sa-east-1"
-}
-
 resource "aws_iam_role" "lambda_exec" {
   name = "fastfood-lambda-role"
   assume_role_policy = jsonencode({
