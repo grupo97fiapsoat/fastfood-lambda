@@ -1,0 +1,27 @@
+name: Teste OIDC
+
+on:
+  workflow_dispatch:   # permite disparo manual pela UI do GitHub
+
+jobs:
+  check-oidc:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Mostrar versão do AWS CLI
+        run: aws --version || true
+
+      - name: Configurar credenciais AWS via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: sa-east-1
+
+      - name: Testar autenticação (sts:get-caller-identity)
+        run: |
+          echo "Chamando sts get-caller-identity..."
+          aws sts get-caller-identity
