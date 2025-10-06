@@ -18,7 +18,8 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
       - name: Configurar credenciais AWS via OIDC
         uses: aws-actions/configure-aws-credentials@v2
@@ -26,13 +27,18 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: sa-east-1
 
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.7 # ou a versão que você estiver usando localmente
+
       - name: Empacotar Lambda
         run: |
           cd src
           zip -r ../deploy.zip .
           cd ..
 
-      - name: Terraform Apply
+      - name: Executar Terraform
         run: |
           cd infra
           terraform init -input=false
