@@ -1,82 +1,37 @@
-#resource "aws_iam_role" "lambda_exec" {
-#  name = "fastfood-lambda-github-role"
-#
-#  assume_role_policy = jsonencode({
-#    Version = "2012-10-17",
-#    Statement = [
-#      # Lambda precisa assumir a role
-#      {
-#        Effect = "Allow",
-#        Principal = {
-#          Service = "lambda.amazonaws.com"
-#        },
-#        Action = "sts:AssumeRole"
-#      },
-#      # GitHub Actions via OIDC
-#      {
-#        Effect = "Allow",
-#        Principal = {
-#          Federated = "arn:aws:iam::939111385333:oidc-provider/token.actions.githubusercontent.com"
-#        },
-#        Action = "sts:AssumeRoleWithWebIdentity",
-#        Condition = {
-#          StringEquals = {
-#            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-#          },
-#          StringLike = {
-#            "token.actions.githubusercontent.com:sub" = "repo:grupo97fiapsoat/fastfood-lambda:*"
-#          }
-#        }
-#      }
-#    ]
-#  })
-#}
+# Role usado pela Lambda para execução
+resource "aws_iam_role" "lambda_exec" {
+  name = "fastfood-lambda-exec-role"
 
-data "aws_iam_role" "lambda_exec" {
-  name = "fastfood-lambda-github-role"
-}
-
-# ===================================================
-# Anexar política básica para Lambda (logs CloudWatch)
-# ===================================================
-resource "aws_iam_role_policy_attachment" "lambda_basic" {
-  role       = data.aws_iam_role.lambda_exec.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-# ===================================================
-# Política adicional para criar/gerenciar roles via Terraform
-# ===================================================
-resource "aws_iam_role_policy" "lambda_permissions" {
-  name = "fastfood-lambda-permissions"
-  role = data.aws_iam_role.lambda_exec.id
-
-  policy = jsonencode({
+  assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
         Effect = "Allow",
-        Action = [
-          "lambda:*",
-          "logs:*",
-          "cloudwatch:*",
-          "s3:*"
-        ],
-        Resource = "*"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
       }
     ]
   })
 }
 
-# ===============================
-# Função Lambda
-# ===============================
+# Anexa a policy básica (logs etc.)
+resource "aws_iam_role_policy_attachment" "lambda_basic" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# Criação (ou atualização) da função Lambda
 resource "aws_lambda_function" "fastfood_lambda" {
   function_name = "fastfood-lambda"
-  role          = data.aws_iam_role.lambda_exec.arn
-  handler       = "handler.main"           # arquivo handler.py e função main
-  runtime       = "python3.13"             # confirme se disponível na sua região
+  role          = aws_iam_role.lambda_exec.arn
+  handler       = "handler.main"
+  runtime       = "python3.13"
 
-  filename         = "${path.module}/deploy.zip"         # ZIP que contém o código
+  filename         = "${path.module}/deploy.zip"
   source_code_hash = filebase64sha256("${path.module}/deploy.zip")
+
+  timeout     = 15
+  memory_size = 128
 }
