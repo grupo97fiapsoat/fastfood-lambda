@@ -30,7 +30,7 @@ jobs:
       - name: Instalar Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.9.7 # ou a versão que você estiver usando localmente
+          terraform_version: 1.9.7
 
       - name: Empacotar Lambda
         run: |
@@ -38,8 +38,18 @@ jobs:
           zip -r ../deploy.zip .
           cd ..
 
-      - name: Executar Terraform
+      - name: Terraform Init
         run: |
           cd infra
           terraform init -input=false
+
+      - name: Import Lambda existente (se houver)
+        run: |
+          cd infra
+          # tenta importar a Lambda; se já importada ou não existir, ignora erro
+          terraform import aws_lambda_function.fastfood_lambda fastfood-lambda || true
+
+      - name: Terraform Apply
+        run: |
+          cd infra
           terraform apply -auto-approve -input=false
