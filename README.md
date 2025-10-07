@@ -68,11 +68,6 @@ O deploy automatizado é feito via GitHub Actions:
 
 ## 📎 Referência
 
-Este repositório faz parte da arquitetura do projeto TechChallenge. Para mais detalhes, consulte:
-
-- [Repositório da API](https://github.com/seu-usuario/fastfood-api)  
-- [Repositório do EKS](https://github.com/seu-usuario/infra-k8s)  
-- [Repositório do RDS](https://github.com/seu-usuario/infra-rds)  
-- [Vídeo de apresentação](https://link-do-video.com)  
+Este repositório faz parte da arquitetura do projeto TechChallenge.
 
 ---
